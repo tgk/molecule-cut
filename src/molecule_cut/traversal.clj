@@ -21,17 +21,18 @@
             (pop queue) 
             (children (peek queue)))
           children)))))
-
+          
 (defn create-seen? []
   "Creates a function that answers true the first time
   it sees a new item, and false every time after that."
   (let [seen-items (ref #{})]
     (fn [item]
-      (if (contains? @seen-items item)
-        true
-        (do 
-          (dosync (alter seen-items conj item))
-          false)))))
+      (dosync
+        (if (contains? @seen-items item)
+          true
+          (do
+            (alter seen-items conj item)
+            false))))))
 					
 (defn visit-children-once-wrapper
   "Wrapper for a children function which gurantees
