@@ -1,26 +1,26 @@
 (ns tests.test-basic-cuts
-	(:use 
-		(molecule-cut smiles basic-cuts)
-		clojure.set
-		clojure.contrib.test-is)
-	(:import 
-		(org.openscience.cdk Atom Bond Molecule DefaultChemObjectBuilder)
-		(org.openscience.cdk.smiles SmilesParser)))
+  (:use 
+    (molecule-cut smiles basic-cuts)
+    clojure.set
+    clojure.contrib.test-is)
+  (:import 
+    (org.openscience.cdk Atom Bond Molecule DefaultChemObjectBuilder)
+    (org.openscience.cdk.smiles SmilesParser)))
 
 ;; Convenience functions for creating test molecules
 (defn new-molecule [] (new Molecule))
 
 (defn new-atom [molecule element] 
-	(let [atom (Atom. element)]
-		(do
-			(.addAtom molecule atom)
-			atom)))
+  (let [atom (Atom. element)]
+    (do
+      (.addAtom molecule atom)
+      atom)))
 
 (defn connect-atoms [molecule atom1 atom2]
-	(let [bond (Bond. atom1 atom2)]
-		(do
-			(.addBond molecule bond)
-			bond)))
+  (let [bond (Bond. atom1 atom2)]
+    (do
+      (.addBond molecule bond)
+      bond)))
 
 ;; Molecules used for testing
 (def star-molecule (new-molecule))
@@ -55,45 +55,45 @@
 
 ;; Tests
 (deftest test-bond-is-outermost? 
-	(is (bond-is-outermost? star-molecule c-h1))
-	(is (bond-is-outermost? star-molecule c-h2))
-	(is (bond-is-outermost? star-molecule c-h3))
-	(is (bond-is-outermost? star-molecule c-h4))
+  (is (bond-is-outermost? star-molecule c-h1))
+  (is (bond-is-outermost? star-molecule c-h2))
+  (is (bond-is-outermost? star-molecule c-h3))
+  (is (bond-is-outermost? star-molecule c-h4))
 
-	(is (bond-is-outermost? chain-molecule c1-c2))
-	(is (not (bond-is-outermost? chain-molecule c2-c3)))
-	(is (bond-is-outermost? chain-molecule c3-c4))
+  (is (bond-is-outermost? chain-molecule c1-c2))
+  (is (not (bond-is-outermost? chain-molecule c2-c3)))
+  (is (bond-is-outermost? chain-molecule c3-c4))
 
-	(is (not (bond-is-outermost? cycle-molecule x1-x2)))
-	(is (not (bond-is-outermost? cycle-molecule x2-x3)))
-	(is (not (bond-is-outermost? cycle-molecule x3-x1)))
-	(is (bond-is-outermost? cycle-molecule x3-x4)))
-	
+  (is (not (bond-is-outermost? cycle-molecule x1-x2)))
+  (is (not (bond-is-outermost? cycle-molecule x2-x3)))
+  (is (not (bond-is-outermost? cycle-molecule x3-x1)))
+  (is (bond-is-outermost? cycle-molecule x3-x4)))
+  
 (deftest test-find-outermost-bonds
-	(is (= [c-h1 c-h2 c-h3 c-h4] (find-outermost-bonds star-molecule)))
-	(is (= [c1-c2 c3-c4] (find-outermost-bonds chain-molecule)))
-	(is (= [x3-x4] (find-outermost-bonds cycle-molecule))))
+  (is (= [c-h1 c-h2 c-h3 c-h4] (find-outermost-bonds star-molecule)))
+  (is (= [c1-c2 c3-c4] (find-outermost-bonds chain-molecule)))
+  (is (= [x3-x4] (find-outermost-bonds cycle-molecule))))
 
 (deftest test-find-cycle-bonds
-	(is (= nil (find-cycle-bonds star-molecule)))
-	(is (= nil (find-cycle-bonds chain-molecule)))
-	(is (= #{x1-x2 x2-x3 x3-x1} (set (find-cycle-bonds cycle-molecule)))))
+  (is (= nil (find-cycle-bonds star-molecule)))
+  (is (= nil (find-cycle-bonds chain-molecule)))
+  (is (= #{x1-x2 x2-x3 x3-x1} (set (find-cycle-bonds cycle-molecule)))))
 
 (def cycle-molecule-without-appendix (cut-bond cycle-molecule x3-x4))
 (deftest test-cut-bond
-	(is (= "CC1CC1" (smiles-from-molecule cycle-molecule)))
-	(is (= "C1CC1" (smiles-from-molecule cycle-molecule-without-appendix))))
+  (is (= "CC1CC1" (smiles-from-molecule cycle-molecule)))
+  (is (= "C1CC1" (smiles-from-molecule cycle-molecule-without-appendix))))
 
 (deftest test-find-cuttable-bonds 
-	(is (= [c-h1 c-h2 c-h3 c-h4] (find-cuttable-bonds star-molecule)))
-	(is (= [c1-c2 c3-c4] (find-cuttable-bonds chain-molecule)))
-	(is (= #{x3-x4 x1-x2 x2-x3 x3-x1} (set (find-cuttable-bonds cycle-molecule))))
-	(is 
-		(= #{x3-x4 x1-x2 x2-x3 x3-x1} 
-		(set (find-cuttable-bonds cycle-molecule))))
-	(is 
-		(= #{x1-x2 x2-x3 x3-x1} 
-		(set (find-cuttable-bonds cycle-molecule-without-appendix)))))
+  (is (= [c-h1 c-h2 c-h3 c-h4] (find-cuttable-bonds star-molecule)))
+  (is (= [c1-c2 c3-c4] (find-cuttable-bonds chain-molecule)))
+  (is (= #{x3-x4 x1-x2 x2-x3 x3-x1} (set (find-cuttable-bonds cycle-molecule))))
+  (is 
+    (= #{x3-x4 x1-x2 x2-x3 x3-x1} 
+    (set (find-cuttable-bonds cycle-molecule))))
+  (is 
+    (= #{x1-x2 x2-x3 x3-x1} 
+    (set (find-cuttable-bonds cycle-molecule-without-appendix)))))
 
 (deftest test-atom-unconnected?
-	(is (not (atom-unconnected? cycle-molecule x4))))
+  (is (not (atom-unconnected? cycle-molecule x4))))
